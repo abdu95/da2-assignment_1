@@ -5,4 +5,11 @@ substansive reasoning:
 
 statistical reasoning:
 
-1. 
+
+------- Notes
+
+1. (h) Do not forget the readme files! >> (search README in PDF)
+2. variables.xlsx >> what should be my variables?
+3. ii. In the end you should end up with 7 non-matched observations. I think I have more non-matched observations...
+4. my dependent (y) variable is *Number of registered death* and explanatory (x) variable is *Number of registered case*.
+
