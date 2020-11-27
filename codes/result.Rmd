@@ -1,0 +1,16 @@
+---
+title: 'DA2: Assignment 1'
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+
+This is a solution for **Homework - PKI** by Data Engineering 3.
+
+## Step 1
