@@ -140,7 +140,3 @@ df <- df %>% filter( !( is.na( population ) | is.na( confirmed ) | is.na( death 
 my_path <- "../data/"
 # COVID data
 write_csv( df , paste0(my_path,'clean/covid_pop_09_11_2020_clean.csv'))
-
-
-
-
