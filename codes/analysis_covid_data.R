@@ -39,9 +39,10 @@ df <- read_csv(my_file)
 # drop extreme values
 df <- subset(df, df$population < 300000000)
 
-####
-# 
-# Quick check on all HISTOGRAMS
+
+#' 4 (c) Check all your variables - with the help of histograms, summary statistics and checking extreme values - 
+#' and make a conscious decision on which observation(s) to drop.
+
 df %>%
   keep(is.numeric) %>% 
   gather() %>% 
@@ -55,6 +56,31 @@ df %>%
 summary( df )
 
 # df %>% filter(!complete.cases(df))
+
+#' 4. f) Check and report your distributions for y and x variables: 
+#' use histograms and summary statistics table (mean, median, min, max, standard deviation)
+
+summary_stats_death <- df %>% summarise(
+  mean = mean(death),
+  median = median(death),
+  std = sd(death),
+  min = min(death),
+  max = max(death))
+
+summary_stats_confirmed <- df %>% summarise(
+  mean = mean(confirmed),
+  median = median(confirmed),
+  std = sd(confirmed),
+  min = min(confirmed),
+  max = max(confirmed))
+
+#' (g) Check the possible different ln transformation for the variables with plotting 
+#' different scatterplots with lo(w)ess. 
+#' Make a substantive and statistical reasoning, where and when to use ln transformation. 
+#' You do not need to fit any model here, only use statistical reasoning based on the graphs.
+#' i. Take care when it is possible to make ln transformation: 
+#' you may need to drop or change some variables.
+
 
 ######
 # Check basic scatter-plot:
