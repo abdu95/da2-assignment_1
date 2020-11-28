@@ -1,0 +1,14 @@
+---
+title:  "DA2: Assignment 1"
+author: "Abduvosid Malikov"
+date: "29 November"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+## Introduction
+
+This is the Assignment 1 for `Data Analysis 2`  and `Coding` course. The aim of this project is  to analyse the pattern of association between *registered COVID-19 cases* and *registered number of death* due to COVID-19 on 10-31-2020. 
+As a source, [covid-19 data](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_daily_reports/10-31-2020.csv) from CSSE^[Center for Systems Science and Engineering] was used. 

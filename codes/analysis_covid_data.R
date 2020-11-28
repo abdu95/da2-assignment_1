@@ -89,6 +89,7 @@ summary_stats_confirmed <- df %>% summarise(
 # Where to use log-transformation? - level-level vs level-log vs log-level vs log-log
 #
 # No_of_death - No_of_confirmed: level-level model without scaling
+# model is not capturing the data very well. model does not fit the data
 ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
