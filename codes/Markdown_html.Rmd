@@ -154,3 +154,5 @@ df <- df %>%
 ```
 
 
+# for 5% change in x, we observe 5% change in y value
+

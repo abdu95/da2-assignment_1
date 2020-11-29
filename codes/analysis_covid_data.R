@@ -138,7 +138,9 @@ df <- df %>%
 # Make some models:
 #     reg1: ln_death = alpha + beta * ln_confirmed
 #     reg2: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2
-#     reg3: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2 + beta_3 * ln_confirmed^3
+#     reg3: ln_death = alpha + beta_1 * ln_confirmed * 1(ln_confirmed < 8) + beta_2 * ln_confirmed * 1(8 <= ln_confirmed  <= 12)
+
+
 # weighted-ols:
 #     reg4: ln_death = alpha + beta * ln_confirmed, weights: population
 
@@ -206,24 +208,6 @@ htmlreg( list(reg1 , reg2 , reg3 , reg4),
          file = paste0( data_out ,'model_comparison.html'), include.ci = FALSE)
 
 
-######
-# Residual analysis. 
-
-# Get the predicted y values from the model
-df$reg4_y_pred <- reg4$fitted.values
-# Calculate the errors of the model
-df$reg4_res <- df$ln_death - df$reg4_y_pred 
-
-# Find countries with largest negative errors
-df %>% top_n( -5 , reg4_res ) %>% 
-  select( country , ln_death, reg4_y_pred , reg4_res )
-
-# Find countries with largest positive errors
-df %>% top_n( 5 , reg4_res ) %>% 
-  select( country , ln_death , reg4_y_pred , reg4_res )
-
-
-
 #################################
 ## Hypothesis Testing 
 #
@@ -239,5 +223,29 @@ linearHypothesis(reg4, "ln_confirmed = 0")
 # Therefore, there is a correlation between log of number of confirmed cases and log of number of death cases
 
 
+######
+# Residual analysis. 
 
-# for 5% change in x, we observe 5% change in y value
+# Get the predicted y values from the model
+df$reg4_y_pred <- reg4$fitted.values
+# Calculate the errors of the model
+df$reg4_res <- df$ln_death - df$reg4_y_pred 
+
+# Find countries with largest positive errors
+# lost most: actual values are above regression line >> more people died than expected
+
+# Find countries who lost (relatively) the most people due to covid using the model result: worst 5 residual.
+df %>% top_n( 5 , reg4_res ) %>% 
+  select( country , ln_death , reg4_y_pred , reg4_res ) %>% 
+  arrange(desc(reg4_res))
+
+# Find countries with largest negative errors
+# e.g. they expected 100 people die, but actual people died is 90
+
+# Find countries who saved (relatively) the most people due to covid using the model result: best 5 residual.
+df %>% top_n( -5 , reg4_res ) %>% 
+  select( country , ln_death, reg4_y_pred , reg4_res ) %>% 
+  arrange(reg4_res)
+
+
+
