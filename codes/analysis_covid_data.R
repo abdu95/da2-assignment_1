@@ -184,3 +184,16 @@ ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
 # Fourth model: Weighted linear regression, using population as weights.
 reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
 summary( reg4 )
+
+ggplot(data = df, aes(x = ln_confirmed, y = ln_death)) +
+  geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
+  geom_smooth(aes(weight = population), method = "lm", color='red')+
+  scale_size(range = c(1, 15)) +
+  labs(x = "ln(Number of confirmed cases) ",y = "ln(Number of death cases)")
+
+# visualize the weighted linear regression model
+ggplot(data = df, aes(x = ln_confirmed_pc_scaled, y = ln_death_pc_scaled)) +
+  geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
+  geom_smooth(aes(weight = population), method = "lm", color='red')+
+  scale_size(range = c(1, 15)) +
+  labs(x = "Confirmed Cases per Million, log scale ",y = "Deaths per Million, log scale")
