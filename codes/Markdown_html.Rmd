@@ -6,12 +6,25 @@ output:
   prettydoc::html_pretty:
     theme: architect
     highlight: github
+    css: style.css
 ---
 
 ## Introduction
 
-This is the Assignment 1 for `Data Analysis 2`  and `Coding` course. The aim of this project is  to analyse the pattern of association between *registered COVID-19 cases* and *registered number of death* due to COVID-19 on 10-31-2020. 
-As a source, [covid-19 data](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_daily_reports/10-31-2020.csv) from CSSE^[Center for Systems Science and Engineering] was used. 
+This is the Assignment 1 for `Data Analysis 2`  and `Coding` course. The aim of this project is  to analyse the pattern of association between **registered COVID-19 cases** and **registered number of death** due to COVID-19 on 10-31-2020. 
+As a source, [covid-19 data](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_daily_reports/10-31-2020.csv) from CSSE^[Center for Systems Science and Engineering] was used. The *population* is all cases reported in CSSE dataset starting from 01-22-2020 until now (the last added report date was 11-28-2020). The *sample* is the dataset that contains confirmed and death cases only from one date: 10-31-2020. The variables that are used are:
+
+* country: string value showing the name of the country
+* confirmed: numeric value showing the number of confirmed cases of COVID
+* death: numeric value showing the number of death cases from COVID 
+* population: numeric value showing the population of the country
+* ln_confirmed: log of number of confirmed cases
+* ln_death: log of number of death cases
+
+Invalid data (measuring flu cases instead of COVID), unreliable data (showing one value today and showing enormously different value tomorrow) and missing values are the potential data quality issues. 
+
+The dependent (y) variable is *Number of registered death* and explanatory (x) variable is *Number of registered case*. Note that this is
+only a `potential' variable, thus you may transform it with ln transformation, if you decide.
 
 ``` {r, warning = FALSE, message = FALSE, include = FALSE}
 library(knitr)
@@ -154,5 +167,5 @@ df <- df %>%
 ```
 
 
-# for 5% change in x, we observe 5% change in y value
+for 5% change in x, we observe 5% change in y value
 

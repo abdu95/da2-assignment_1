@@ -55,7 +55,7 @@ df %>%
   scale_fill_wsj()
 
 
-summary( df )
+what <- summary( df )
 
 # df %>% filter(!complete.cases(df))
 
@@ -246,6 +246,4 @@ df %>% top_n( 5 , reg4_res ) %>%
 df %>% top_n( -5 , reg4_res ) %>% 
   select( country , ln_death, reg4_y_pred , reg4_res ) %>% 
   arrange(reg4_res)
-
-
 

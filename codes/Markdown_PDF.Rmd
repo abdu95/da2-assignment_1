@@ -1,7 +1,6 @@
 ---
-title: 'DA2: Assignment 1'
-author: "Abduvosid Malikov"
-date: "29 November"
+title: 'DA2: Assignment 1 by Abduvosid Malikov'
+geometry: "left=1cm,right=1cm,top=1cm,bottom=1.5cm"
 output:
   pdf_document: default
   html_document:
@@ -9,13 +8,23 @@ output:
 ---
 
 
-
-
 ## Introduction
 
-This is the Assignment 1 for `Data Analysis 2` and `Coding` course. The aim of this project is  to analyse the pattern of association between *registered COVID-19 cases* and *registered number of death* due to COVID-19 on 10-31-2020. 
-As a source, [covid-19 data](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_daily_reports/10-31-2020.csv) from CSSE^[Center for Systems Science and Engineering] was used. 
+This is the Assignment 1 for `Data Analysis 2`  and `Coding` course. The aim of this project is  to analyse the pattern of association between **registered COVID-19 cases** and **registered number of death** due to COVID-19 on 10-31-2020. 
+As a source, [covid-19 data](https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_daily_reports/10-31-2020.csv) from CSSE^[Center for Systems Science and Engineering] was used. The *population* is all cases reported in CSSE dataset starting from 01-22-2020 until now (the last added report date was 11-28-2020). The *sample* is the dataset that contains confirmed and death cases only from one date: 10-31-2020. The variables that are used are:
 
+* country: string value showing the name of the country
+* confirmed: numeric value showing the number of confirmed cases of COVID
+* death: numeric value showing the number of death cases from COVID 
+* population: numeric value showing the population of the country
+* ln_confirmed: log of number of confirmed cases
+* ln_death: log of number of death cases
+
+Invalid data (measuring flu cases instead of COVID), unreliable data (showing one value today and showing enormously different value tomorrow) and missing values are the potential data quality issues. 
+
+The dependent (y) variable is *Number of registered death* and explanatory (x) variable is *Number of confirmed case*. Figure 1 below shows the histogram for both variables
+
+Both of the histograms have long right tail because majority of observations have almost same values and only few observations have extreme values. Most of the observations for confirmed cases are between 0 and 2 million, only 2 observations have a value more than 4 million. Most of the death cases are between 0 and 50000 and only 3 observations have a value more than 50000. 
 
 ``` {r, warning = FALSE, message = FALSE, include = FALSE}
 library(knitr)
@@ -32,20 +41,18 @@ my_file <- "../data/clean/covid_pop_09_11_2020_clean.csv"
 df <- read_csv(my_file)
 ```
 
-``` {r, echo = FALSE, warning = FALSE, message = FALSE}
-
+```{r, echo = FALSE,message=FALSE, warning=FALSE, fig.width=7, fig.height=3, fig.cap = "Histogram of confirmed and death cases"}
 df %>%
-  keep(is.numeric) %>% 
-  gather() %>% 
+  select(confirmed,death) %>%
+  keep(is.numeric) %>%
+  gather() %>%
   ggplot(aes(value)) +
   facet_wrap(~key, scales = "free") +
   geom_histogram()+
-  theme_wsj() + 
+  theme_wsj() +
   scale_fill_wsj()
-
-
-# summary( df )
 ```
+
 
 ``` {r, warning = FALSE, message = FALSE, include = FALSE}
 
@@ -68,16 +75,78 @@ summary_stats_confirmed <- df %>% summarise(
   max = max(confirmed))
 ```
 
+Tables below shows that on average there are 5472 death cases and 209452 registered cases. Mean is higher than median both for death numbers and registered cases indicating a skewed distribution with a long right tail.  
+
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 kable(summary_stats_death, caption = "Summary statistics on number of death")
 
-kable(summary_stats_confirmed, caption = "Summary statistics on number of confirmed cases") 
+kable(summary_stats_confirmed, caption = "Summary statistics on number of registered cases") 
 
 ```
 
+## Variable transformation
 
-## level - level
+**level - level** 
+
+Substantive: distribution does not give meaningful interpretation
+
+Statistical: there are some influential observations that governing the conditional mean. Graph is given in Appendix
+
+**level y - log x:**
+
+Substantive reasoning: level changes in death cases is harder to interpret
+
+Statistical reasoning: log transformation shows the better approximation and capturing the non-linearity in data. Graph is given in Appendix
+
+**log y - level x:**
+
+Most of the observations are very close to each other at the bottom of the distribution of number of registered cases.
+
+Substantive reasoning: level changes in registered cases is harder to interpret
+Statistical reasoning: log transformation of number of registered death and taking level of number of case does not give meaningful non-linear approximation. Graph is given in Appendix
+
+
+**log y - log x**
+
+Taking log of number of registered death and log of number of registered case is making the association close to linear
+
+Substantive reasoning: it is easier to interpret the percentage change in number of death per percentage change in confirmed case
+
+Statistical reasoning: it shows the better approximation: making the association close to linear
+
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="log y - log x transformation" }
+
+ggplot( df , aes(x = confirmed, y = death ))  +
+  geom_point() +
+  geom_smooth(method="loess")+
+  labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death (ln scale)") +
+  scale_x_continuous( trans = log_trans() )+
+  scale_y_continuous( trans = log_trans() )
+```
+
+## Estimating different models
+
+
+
+
+
+
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Add log of confirmed cases and log of number of death
+df <- df %>% 
+      mutate(ln_confirmed = log(confirmed),
+             ln_death = log(death))
+# for 5% change in x, we observe 5% change in y value
+
+```
+
+## Appendix
+
+**level - level**
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.width=4, fig.height=3,  fig.cap = "level - level distribution"}
 # No_of_death - No_of_confirmed: level-level model without scaling
 # model is not capturing the data very well. model does not fit the data
 ggplot( df , aes(x = confirmed, y = death)) +
@@ -87,9 +156,9 @@ ggplot( df , aes(x = confirmed, y = death)) +
 
 ```
 
-## level y - log x
+**level - log transformation**
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap = "level -log transformation"}
 ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
@@ -97,27 +166,14 @@ ggplot( df , aes(x = confirmed, y = death)) +
   scale_x_continuous( trans = log_trans() )
 ```
 
-## log y - level x
-Figure 8.6 A, p214
+**log y - level x transformation**
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="log y - level x transformation"}
 
 ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020)",y = "Number of registered death (ln scale)") +
-  scale_y_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
-```
-
-## log y - log x
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
-
-ggplot( df , aes(x = confirmed, y = death ))  +
-  geom_point() +
-  geom_smooth(method="loess")+
-  labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death (ln scale)") +
-  scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )+
   scale_y_continuous( trans = log_trans() )
 ```
-
 

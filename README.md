@@ -11,7 +11,6 @@ statistical reasoning:
 1. (h) Do not forget the readme files! >> (search README in PDF)
 2. variables.xlsx >> what should be my variables? done. is my variables correct?
 3. ii. In the end you should end up with 7 non-matched observations. I think I have more non-matched observations...
-4. my dependent (y) variable is *Number of registered death* and explanatory (x) variable is *Number of registered case*.
 5. which observation(s) to drop >> extreme values. 
 6. what to do to change 3.386e+04 to normal number?
 7. Canada and Chile NA: Princess in Canada, drop Princess first?
@@ -21,3 +20,4 @@ statistical reasoning:
 11. Read Evaluation
 12. Take care when it is possible to make ln transformation: you may need to drop or change some variables >> Should I change some variables?
 13. For **reasoning** and for **regression models**, should I pick one (log-log) or many (log-log + level-log)
+14. So you have chosen log-log model OR weighted OLS model
