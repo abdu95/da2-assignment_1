@@ -187,7 +187,7 @@ ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
 
 # Fourth model: Weighted linear regression, using population as weights.
 reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
-summary( reg4 )
+summary_data <- summary( reg4 )
 
 ggplot(data = df, aes(x = ln_confirmed, y = ln_death)) +
   geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
@@ -259,3 +259,12 @@ ggplot( data = df, aes( x = confirmed, y = death ) ) +
   geom_point( color='blue') +
   geom_smooth( method = lm , color = 'red' )
 
+library(knitr)
+## Install data.table package
+install.packages("data.table")
+
+## Load data.table package
+library(data.table)
+summary_reg1_df <- rbindlist(summary_reg1, fill=T)
+
+kable(summary_reg1, caption = "Summary statistics for Simple Linear Regression")

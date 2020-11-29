@@ -1,10 +1,10 @@
 ---
 title: 'DA2: Assignment 1 by Abduvosid Malikov'
-geometry: "left=1cm,right=1cm,top=1cm,bottom=1.5cm"
+geometry: "left=1cm,right=1cm,top=0.5cm,bottom=1.5cm"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 
@@ -34,6 +34,7 @@ library(lspline)
 library(estimatr)
 library(texreg)
 library(ggthemes)
+library(car)
 
 my_file <- "../data/clean/covid_pop_09_11_2020_clean.csv"
 
@@ -129,35 +130,100 @@ ggplot( df , aes(x = confirmed, y = death ))  +
 
 Four different models were created. 
 
-First model illustrates Simple Linear Regression for log of number of death regressed on log of number of registered cases:
+**First model** illustrates Simple Linear Regression for log of number of death regressed on log of number of registered cases:
 
 Regression model 1: ln_death = alpha + beta * ln_confirmed
 
 R squared: 0.8944
 
+In this model, intercept is -4.406 and slope is 1.03. 
 
-Second model shows Quadratic (linear) regression for og of number of death regressed on log of number of registered cases:
+**Second model** shows Quadratic (linear) regression for log of number of death regressed on log of number of registered cases:
 
 Regression model 2: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2
 
 R squared: 0.90
 
-Third model is for Piecewise linear spline regression. 3 cutoff points (knots) were chosen: 8,12,14
+In this model, intercept is -1.03 and slope 1 (beta1) is 0.31 and slope 2 (beta2) is 0.04.
+
+**Third model** is for Piecewise linear spline regression. 3 cutoff points (knots) were chosen: 8,12,14
+
+Regression model 3: ln_death = alpha + beta_1 * ln_confirmed * 1(ln_confirmed < 8) + beta_2 * ln_confirmed * 1(8 <= ln_confirmed  <= 12)
 
 R-squared: 0.9037
 
-Fourth model demonstrates Weighted linear regression, using population as weights.
 
+**Fourth model** demonstrates Weighted linear regression, using population as weights.
+
+R-squared: 0.9281
+
+This model was chosen as it has higher R squared compared to other models
+
+
+## Hypothesis testing
+
+The following test was carried out: 
+H0 : beta = 0; HA : beta != 0
+
+The significance level that was chosen is 5%. 
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
-
 # Add log of confirmed cases and log of number of death
 df <- df %>% 
       mutate(ln_confirmed = log(confirmed),
              ln_death = log(death))
 # for 5% change in x, we observe 5% change in y value
 
+# exclude countries with negative logs
+df <- df %>% filter( ln_death >= 0)
+
+reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
+
+hypo_table <- linearHypothesis(reg4, "ln_confirmed = 0")
+kable(hypo_table, caption = "Hypothesis table")
+
+
 ```
+
+Table above shows that p-value is smaller than 2.2e-16 which is very close to zero. Since it is very small, we reject the null.
+Rejecting the H0 : beta = 0 means that slope is not equal to 0. Therefore, there is a correlation between log of number of confirmed cases and log of number of death cases
+
+
+## Analysis of the residuals 
+The table shows that the countries with the largest negative errors - countries who saved (relatively) the most people due to covid are: Singapore, Burundi, Sri Lanka, Qatar and Iceland. The  countries with the largest positive errors - countries who lost (relatively) the most people due to covid are: Mexico, Ecuador, Italy, Bolivia and Sudan. 
+
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Get the predicted y values from the model
+df$reg4_y_pred <- reg4$fitted.values
+# Calculate the errors of the model
+df$reg4_res <- df$ln_death - df$reg4_y_pred 
+
+# Find countries with largest positive errors
+# lost most: actual values are above regression line >> more people died than expected
+
+# Find countries who lost (relatively) the most people due to covid using the model result: worst 5 residual.
+top_5 <- df %>% top_n( 5 , reg4_res ) %>% 
+  select( country , ln_death , reg4_y_pred , reg4_res ) %>% 
+  arrange(desc(reg4_res))
+
+# Find countries with largest negative errors
+top_negative_5 <- df %>% top_n( -5 , reg4_res ) %>% 
+  select( country , ln_death, reg4_y_pred , reg4_res ) %>% 
+  arrange(reg4_res)
+
+kable(top_5, caption = "Countries with largest positive errors")
+kable(top_negative_5, caption = "Countries with largest negative errors")
+
+```
+
+## Executive summary
+
+As a result of analysis of variable of number of death (y) and number of registered case (x), it was clear that there is a clear linear association between them. 
+
+The main message of the chosen model (Weighted linear regression model) is that there is positive correlation between two variables. More observations would reduce the error, make the model to better fit the data and strengthen the results.
+
 
 ## Appendix
 
@@ -195,9 +261,7 @@ ggplot( df , aes(x = confirmed, y = death)) +
 ```
 
 
-```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="First model: Simple Linear Regression for ln_confirmed - ln_death"}
-# exclude countries with negative logs
-df <- df %>% filter( ln_death >= 0)
+```{r, echo = FALSE, warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="First model: Simple Linear Regression for ln_confirmed - ln_death"}
 
 # First model: Simple Linear Regression for ln_confirmed - ln_death
 reg1 <- lm_robust(ln_death ~ ln_confirmed, data = df, se_type = "HC2")
@@ -208,10 +272,11 @@ summary(reg1)
 ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) + 
   geom_point( color='blue') +
   geom_smooth( method = lm , color = 'red' )
+
 ```
 
 
-```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Second model: Quadratic (linear) regression for ln_confirmed - ln_death"}
+```{r, echo = FALSE,  warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="Second model: Quadratic (linear) regression for ln_confirmed - ln_death"}
 # To handle polynomials: 
 # Add powers of the variable(s) to the dataframe:
 df <- df %>% mutate( ln_confirmed_sq = ln_confirmed^2,
@@ -226,7 +291,7 @@ ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
 ```
 
 
-```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Third model: Piecewise linear spline regression"}
+```{r, echo = FALSE,  warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="Third model: Piecewise linear spline regression"}
 
 # 1st define the cutoff for gdp per capita
 cutoff <- c(8,12,14) # or use c(10, 50)
@@ -240,7 +305,13 @@ ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
 ```
 
 
-```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Fourth model: Weighted linear regression, using population as weights"}
+**Weighted linear regression**
+
+Substantive reasoning: it is easier to interpret the percentage change in number of death to the percentage change in confirmed case
+
+Statistical reasoning: this model captures the observations better, covering residuals also 
+
+```{r, echo = FALSE,  warning = FALSE, message = FALSE, fig.width=5, fig.height=3, fig.cap="Fourth model: Weighted linear regression, using population as weights"}
 reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
 summary( reg4 )
 
