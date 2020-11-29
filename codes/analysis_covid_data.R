@@ -167,10 +167,20 @@ ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
   geom_point( color='blue') +
   geom_smooth( formula = y ~ poly(x,2) , method = lm , color = 'red' )
 
-# Third model
-reg3 <- lm_robust( ln_death ~ ln_confirmed + ln_confirmed_sq + ln_gdptot_cb , data = df )
-ggplot( data = df, aes( x = ln_gdptot, y = lifeexp ) ) + 
+
+# Third model: Piecewise linear spline regression
+
+# 1st define the cutoff for gdp per capita
+cutoff <- c(8,12,14) # or use c(10, 50)
+# 2nd we use a log transformation -> cutoff needs to be transformed as well
+# Use simple regression with the lspline function
+reg3 <- lm_robust(ln_death ~ lspline( ln_confirmed , cutoff), data = df )
+summary( reg3 )
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
   geom_point( color='blue') +
-  geom_smooth( formula = y ~ poly(x,3) , method = lm , color = 'red' )
+  geom_smooth( formula = y ~ lspline(x, cutoff) , method = lm , color = 'red' )
 
 
+# Fourth model: Weighted linear regression, using population as weights.
+reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
+summary( reg4 )
