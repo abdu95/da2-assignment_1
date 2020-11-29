@@ -20,3 +20,4 @@ statistical reasoning:
 10. Show the model results >> model results are alpha and beta?
 11. Read Evaluation
 12. Take care when it is possible to make ln transformation: you may need to drop or change some variables >> Should I change some variables?
+13. For **reasoning** and for **regression models**, should I pick one (log-log) or many (log-log + level-log)

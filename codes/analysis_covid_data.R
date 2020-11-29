@@ -127,5 +127,50 @@ ggplot( df , aes(x = confirmed, y = death ))  +
 # - Substantive: unit of measurement
 # - Statistical: avoiding long-right tail, more symmetric
 
+# Add log of confirmed cases and log of number of death
+df <- df %>% 
+  mutate(ln_confirmed = log(confirmed),
+         ln_death = log(death))
+
+######
+# Make some models:
+#     reg1: ln_death = alpha + beta * ln_confirmed
+#     reg2: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2
+#     reg3: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2 + beta_3 * ln_confirmed^3
+# weighted-ols:
+#     reg4: ln_death = alpha + beta * ln_confirmed, weights: population
+
+# exclude countries with negative logs
+df <- df %>% filter( ln_death >= 0)
+
+
+# First model: Simple Linear Regression for ln_confirmed - ln_death
+reg1 <- lm_robust(ln_death ~ ln_confirmed, data = df, se_type = "HC2")
+reg1
+# Summary statistics
+summary(reg1)
+# Visual inspection:
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( method = lm , color = 'red' )
+
+# To handle polynomials: 
+# Add powers of the variable(s) to the dataframe:
+df <- df %>% mutate( ln_confirmed_sq = ln_confirmed^2,
+                     ln_death_sq = ln_death^2)
+
+
+# Second model: Quadratic (linear) regression for ln_confirmed - ln_death
+reg2 <- lm_robust( ln_death ~ ln_confirmed + ln_confirmed_sq , data = df )
+summary( reg2 )
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( formula = y ~ poly(x,2) , method = lm , color = 'red' )
+
+# Third model
+reg3 <- lm_robust( ln_death ~ ln_confirmed + ln_confirmed_sq + ln_gdptot_cb , data = df )
+ggplot( data = df, aes( x = ln_gdptot, y = lifeexp ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( formula = y ~ poly(x,3) , method = lm , color = 'red' )
 
 

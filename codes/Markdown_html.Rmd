@@ -131,12 +131,26 @@ ggplot( df , aes(x = confirmed, y = death ))  +
 
 **level y - log x:**
 
-Substantive reasoning: Level changes is harder to interpret, I would like to see how many people died per percentage change in confirmed case
+Substantive reasoning: Level changes is harder to interpret
 Statistical reasoning: log transformation shows the better approximation
 
 **log y - level x:**
 
 Substantive reasoning: it does not give better interpretation 
 Statistical reasoning: log transformation of number of registered death and taking level of number of case does not give good approximation
+
+**log y - log x**
+
+Substantive reasoning: it is easier to interpret the percentage change in number of death per percentage change in confirmed case
+Statistical reasoning: it shows the better approximation: making the association close to linear
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Add log of confirmed cases and log of number of death
+df <- df %>% 
+      mutate(ln_confirmed = log(confirmed),
+             ln_death = log(death))
+
+```
 
 
