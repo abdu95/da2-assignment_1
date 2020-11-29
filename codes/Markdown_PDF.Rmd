@@ -2,9 +2,9 @@
 title: 'DA2: Assignment 1 by Abduvosid Malikov'
 geometry: "left=1cm,right=1cm,top=1cm,bottom=1.5cm"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 
@@ -127,9 +127,26 @@ ggplot( df , aes(x = confirmed, y = death ))  +
 
 ## Estimating different models
 
+Four different models were created. 
+
+First model illustrates Simple Linear Regression for log of number of death regressed on log of number of registered cases:
+
+Regression model 1: ln_death = alpha + beta * ln_confirmed
+
+R squared: 0.8944
 
 
+Second model shows Quadratic (linear) regression for og of number of death regressed on log of number of registered cases:
 
+Regression model 2: ln_death = alpha + beta_1 * ln_confirmed + beta_2 * ln_confirmed^2
+
+R squared: 0.90
+
+Third model is for Piecewise linear spline regression. 3 cutoff points (knots) were chosen: 8,12,14
+
+R-squared: 0.9037
+
+Fourth model demonstrates Weighted linear regression, using population as weights.
 
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
@@ -176,4 +193,64 @@ ggplot( df , aes(x = confirmed, y = death)) +
   labs(x = "Number of registered case (31 October 2020)",y = "Number of registered death (ln scale)") +
   scale_y_continuous( trans = log_trans() )
 ```
+
+
+```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="First model: Simple Linear Regression for ln_confirmed - ln_death"}
+# exclude countries with negative logs
+df <- df %>% filter( ln_death >= 0)
+
+# First model: Simple Linear Regression for ln_confirmed - ln_death
+reg1 <- lm_robust(ln_death ~ ln_confirmed, data = df, se_type = "HC2")
+reg1
+# Summary statistics
+summary(reg1)
+# Visual inspection:
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( method = lm , color = 'red' )
+```
+
+
+```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Second model: Quadratic (linear) regression for ln_confirmed - ln_death"}
+# To handle polynomials: 
+# Add powers of the variable(s) to the dataframe:
+df <- df %>% mutate( ln_confirmed_sq = ln_confirmed^2,
+                     ln_death_sq = ln_death^2)
+
+# Second model: Quadratic (linear) regression for ln_confirmed - ln_death
+reg2 <- lm_robust( ln_death ~ ln_confirmed + ln_confirmed_sq , data = df )
+summary( reg2 )
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( formula = y ~ poly(x,2) , method = lm , color = 'red' )
+```
+
+
+```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Third model: Piecewise linear spline regression"}
+
+# 1st define the cutoff for gdp per capita
+cutoff <- c(8,12,14) # or use c(10, 50)
+# 2nd we use a log transformation -> cutoff needs to be transformed as well
+# Use simple regression with the lspline function
+reg3 <- lm_robust(ln_death ~ lspline( ln_confirmed , cutoff), data = df )
+summary( reg3 )
+ggplot( data = df, aes( x = ln_confirmed, y = ln_death ) ) +
+  geom_point( color='blue') +
+  geom_smooth( formula = y ~ lspline(x, cutoff) , method = lm , color = 'red' )
+```
+
+
+```{r, echo = FALSE, fig.width=5, fig.height=3, fig.cap="Fourth model: Weighted linear regression, using population as weights"}
+reg4 <- lm_robust(ln_death ~ ln_confirmed, data = df , weights = population)
+summary( reg4 )
+
+ggplot(data = df, aes(x = ln_confirmed, y = ln_death)) +
+  geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
+  geom_smooth(aes(weight = population), method = "lm", color='red')+
+  scale_size(range = c(1, 15)) +
+  labs(x = "Number of confirmed cases (ln scale) ",y = "Number of death cases, (ln scale)")
+```
+
+
+![Model comparison](../out/model_comparison.png)
 

@@ -247,3 +247,15 @@ df %>% top_n( -5 , reg4_res ) %>%
   select( country , ln_death, reg4_y_pred , reg4_res ) %>% 
   arrange(reg4_res)
 
+
+
+# Simple Linear Regression for confirmed - death
+reg9 <- lm_robust(death ~ confirmed, data = df, se_type = "HC2")
+reg9
+# Summary statistics
+summary(reg9)
+# Visual inspection:
+ggplot( data = df, aes( x = confirmed, y = death ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( method = lm , color = 'red' )
+
