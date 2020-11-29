@@ -29,6 +29,8 @@ library(texreg)
 # For different themes
 #install.packages(ggthemes)
 library(ggthemes)
+# hypothesis test
+library(car)
 
 # the file path 
 my_file <- "../data/clean/covid_pop_09_11_2020_clean.csv"
@@ -198,9 +200,44 @@ data_out <- "../out/"
 
 htmlreg( list(reg1 , reg2 , reg3 , reg4),
          type = 'html',
-         custom.model.names = c("GDP total - linear","GDP total - quadratic","GDP total - cubic",
-                                "GDP/capita - linear","GDP/capita - quadratic","GDP/capita - PLS",
-                                "GDP/capita - weighted linear"),
-         caption = "Modelling life expectancy and different wealth measures of countries",
+         custom.model.names = c("Confirmed (ln)- linear","Confirmed (ln) - quadratic",
+                                "Confirmed (ln) - PLS", "Confirmed (ln) - weighted linear"),
+         caption = "Modelling log of death numbers and log of confirmed numbers of COVID in all countries",
          file = paste0( data_out ,'model_comparison.html'), include.ci = FALSE)
 
+
+######
+# Residual analysis. 
+
+# Get the predicted y values from the model
+df$reg4_y_pred <- reg4$fitted.values
+# Calculate the errors of the model
+df$reg4_res <- df$ln_death - df$reg4_y_pred 
+
+# Find countries with largest negative errors
+df %>% top_n( -5 , reg4_res ) %>% 
+  select( country , ln_death, reg4_y_pred , reg4_res )
+
+# Find countries with largest positive errors
+df %>% top_n( 5 , reg4_res ) %>% 
+  select( country , ln_death , reg4_y_pred , reg4_res )
+
+
+
+#################################
+## Hypothesis Testing 
+#
+
+
+# Carry out the following test: H0 : beta = 0; HA : beta != 0.
+
+linearHypothesis(reg4, "ln_confirmed = 0")
+
+# p-value is smaller than 2.2e-16 which is very close to zero.
+# Since it is very small, we reject the null
+# Rejecting the H0 : beta = 0 means that slope is not equal to 0
+# Therefore, there is a correlation between log of number of confirmed cases and log of number of death cases
+
+
+
+# for 5% change in x, we observe 5% change in y value
