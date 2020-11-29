@@ -73,6 +73,9 @@ kable(summary_stats_confirmed, caption = "Summary statistics on number of confir
 
 
 ## level - level
+does not give better interpretation
+There are some influential observations that governing the conditional mean. 
+
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 # No_of_death - No_of_confirmed: level-level model without scaling
 # model is not capturing the data very well. model does not fit the data
@@ -84,17 +87,24 @@ ggplot( df , aes(x = confirmed, y = death)) +
 ```
 
 ## level y - log x
-
+capturing the non-linearity in data
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death") +
-  scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
+  scale_x_continuous( trans = log_trans() )
 ```
 
 ## log y - level x
+
+non-linear
+
 Figure 8.6 A, p214
+
+Most of the observations are very close to each other at the bottom of the distribution of Number of registered cases.
+
+
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 
@@ -102,16 +112,31 @@ ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020)",y = "Number of registered death (ln scale)") +
-  scale_y_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
+  scale_y_continuous( trans = log_trans() )
 ```
 
 ## log y - log x
+
+Taking log of number of registered death and log of number of registered case is making the association close to linear
+
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 
 ggplot( df , aes(x = confirmed, y = death ))  +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death (ln scale)") +
-  scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )+
+  scale_x_continuous( trans = log_trans() )+
   scale_y_continuous( trans = log_trans() )
 ```
+
+**level y - log x:**
+
+Substantive reasoning: Level changes is harder to interpret, I would like to see how many people died per percentage change in confirmed case
+Statistical reasoning: log transformation shows the better approximation
+
+**log y - level x:**
+
+Substantive reasoning: it does not give better interpretation 
+Statistical reasoning: log transformation of number of registered death and taking level of number of case does not give good approximation
+
+

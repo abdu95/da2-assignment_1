@@ -103,21 +103,21 @@ ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death") +
-  scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
+  scale_x_continuous( trans = log_trans() )
 
 # changing the scale for No_of_death for checking log-transformation: log y - level x 
 ggplot( df , aes(x = confirmed, y = death)) +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020)",y = "Number of registered death (ln scale)") +
-  scale_y_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
+  scale_y_continuous( trans = log_trans() )
 
 # changing the scale for No_of_death and No_of_confirmed for checking log-transformation: log y - log x
 ggplot( df , aes(x = confirmed, y = death ))  +
   geom_point() +
   geom_smooth(method="loess")+
   labs(x = "Number of registered case (31 October 2020, ln scale)",y = "Number of registered death (ln scale)") +
-  scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )+
+  scale_x_continuous( trans = log_trans() )+
   scale_y_continuous( trans = log_trans() )
 
 
