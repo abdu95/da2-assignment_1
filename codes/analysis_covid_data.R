@@ -189,11 +189,18 @@ ggplot(data = df, aes(x = ln_confirmed, y = ln_death)) +
   geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
   geom_smooth(aes(weight = population), method = "lm", color='red')+
   scale_size(range = c(1, 15)) +
-  labs(x = "ln(Number of confirmed cases) ",y = "ln(Number of death cases)")
+  labs(x = "Number of confirmed cases (ln scale) ",y = "Number of death cases, (ln scale)")
 
-# visualize the weighted linear regression model
-ggplot(data = df, aes(x = ln_confirmed_pc_scaled, y = ln_death_pc_scaled)) +
-  geom_point(data = df, aes(size=population),  color = 'blue', shape = 16, alpha = 0.6,  show.legend=F) +
-  geom_smooth(aes(weight = population), method = "lm", color='red')+
-  scale_size(range = c(1, 15)) +
-  labs(x = "Confirmed Cases per Million, log scale ",y = "Deaths per Million, log scale")
+#####
+# Creating model summary with texreg
+
+data_out <- "../out/"
+
+htmlreg( list(reg1 , reg2 , reg3 , reg4),
+         type = 'html',
+         custom.model.names = c("GDP total - linear","GDP total - quadratic","GDP total - cubic",
+                                "GDP/capita - linear","GDP/capita - quadratic","GDP/capita - PLS",
+                                "GDP/capita - weighted linear"),
+         caption = "Modelling life expectancy and different wealth measures of countries",
+         file = paste0( data_out ,'model_comparison.html'), include.ci = FALSE)
+
